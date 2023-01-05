@@ -1,0 +1,32 @@
+{
+  "name": "pow_captcha",
+  "version": "1.0.0",
+  "description": "A proof of work captcha that forces a computer to brute force until it finds a correct output to the input given by using hash logic",
+  "main": "pow.js",
+  "scripts": {
+    "test": "node pow_test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Y0ursTruly/pow_captcha.git"
+  },
+  "keywords": [
+    "work",
+    "captcha",
+    "proof",
+    "of",
+    "work",
+    "pow",
+    "proof",
+    "of",
+    "work",
+    "captcha",
+    "hash"
+  ],
+  "author": "Paul R. Y. Taylor",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Y0ursTruly/pow_captcha/issues"
+  },
+  "homepage": "https://github.com/Y0ursTruly/pow_captcha#readme"
+}
