@@ -80,7 +80,7 @@ async function makeTest(tries, B=1024, a1=0, a2=256){
 async function takeTest(input,fn,delay=200){
   const {array,hash,chars,a1,a2,times}=JSON.parse(input)
   let buffer=Buffer.from(array), i=0, s=null
-  if(fn) s=setInterval(_=>fn(i,times),delay);
+  if(typeof fn==="function") setInterval(_=>fn(i,times),delay);
   ////progress report if you put a function to receive the data (browser only)
   
   for(i=0;i<times;i++){
@@ -97,7 +97,7 @@ async function takeTest(input,fn,delay=200){
     if( (await HASH(buffer)) === hash ) break;
   }
   
-  clearInterval(s)
+  if(s!==null) clearInterval(s);
   return str(buffer)
 }
 
