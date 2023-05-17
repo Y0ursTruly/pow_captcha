@@ -11,10 +11,10 @@ function timeTaken(user_function,times_testing){
 var isAllTrue=true;
 (()=>{
   console.log('test 1(one large):')
+  let [Lquiz,Lanswer]=makeTest(16**5*2,1024,10,128)
   console.log(timeTaken(()=>{
-    let [quiz,answer]=makeTest(16**5*2,1024,10,128)
-    let result=takeTest(quiz)
-    let isTrue=result===answer
+    let result=takeTest(Lquiz)
+    let isTrue=result===Lanswer
     isAllTrue=isAllTrue&&isTrue
   },1))
 
@@ -28,9 +28,8 @@ var isAllTrue=true;
 
   console.log(`\ntest 3 ${red}SLOW${reset} (one large with browser hash):`)
   console.log(timeTaken(()=>{
-    let [quiz,answer]=makeTest(16**5*2,1024,10,128)
-    let result=takeTestBrowser(quiz)
-    let isTrue=result===answer
+    let result=takeTestBrowser(Lquiz)
+    let isTrue=result===Lanswer
     isAllTrue=isAllTrue&&isTrue
   },1))
 
