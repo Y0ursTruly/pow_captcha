@@ -179,7 +179,7 @@ let browserHash=(function() { //adapted from https://github.com/dchest/fast-sha2
   }
 })();
 
-var webcrypto, HASH
+var webcrypto, HASH, str;
 if(WINDOW){
   window.Buffer={
     from(arr){
@@ -190,6 +190,10 @@ if(WINDOW){
     },
     alloc(n){  return new Uint8Array(n)  }
   }
+  str=function(thing){
+    if(!(thing instanceof Uint8Array)) return JSON.stringify(thing);
+    return JSON.stringify(  {type:"Buffer",data:Object.values(thing)}  )
+  }
   webcrypto=crypto
   HASH=browserHash
 }
@@ -197,10 +201,11 @@ else{
   HASH =(buffer)=>crypto.createHash('sha256').update(buffer).digest('base64')
   let crypto=require('node:crypto')
   webcrypto=crypto.webcrypto
+  str=JSON.stringify
 }
 const {floor,ceil,pow,round}=Math
+const range =(min,max)=> floor(random()*(max-min))+min
 const random=_=> webcrypto.getRandomValues(new Uint32Array(1))[0] / pow(2,32)
-const range =(min,max)=> floor(random()*(max-min))+min, str=JSON.stringify
 const curve =(num,min,max)=> num<min? max-(min-num): min+((num-min)%(max-min))
 function unique(n,record){
   let result=null
