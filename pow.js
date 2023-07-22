@@ -5,6 +5,16 @@ for(let i=0;i<256;i++){
   ab_map[i]=String.fromCharCode(i);
   str_map[ab_map[i]]=i;
 }
+function ab2str(buf) {
+  let arr=new Uint8Array(buf), chars="";
+  for(let i=0;i<arr.length;i++) chars+=ab_map[arr[i]];
+  return chars;
+}
+function str2ab(str) {
+  let buf=Buffer.alloc(str.length);
+  for (let i=0;i<str.length;i++) buf[i]=str_map[str[i]];
+  return buf;
+}
 let browserHash=(function() { //adapted from https://github.com/dchest/fast-sha256-js/blob/master/sha256.js
   // SHA-256 constants
   var K = new Uint32Array([
@@ -160,16 +170,6 @@ let browserHash=(function() { //adapted from https://github.com/dchest/fast-sha2
       return Hash;
   }());
   // Returns SHA256 hash of data.
-  let ab_map=[], str_map={__proto__:null} //arrayBuffer_map[number]=letter, string_map[letter]=number
-  for(let i=0;i<256;i++){
-    ab_map[i]=String.fromCharCode(i);
-    str_map[ab_map[i]]=i;
-  }
-  function ab2str(buf) {
-    let arr=new Uint8Array(buf), chars="";
-    for(let i=0;i<arr.length;i++) chars+=ab_map[arr[i]];
-    return chars;
-  }
   const instance=new Hash()
   return function hash(buffer) {
       instance.update(buffer)
@@ -179,20 +179,10 @@ let browserHash=(function() { //adapted from https://github.com/dchest/fast-sha2
   }
 })();
 
-var webcrypto, HASH, str;
+var webcrypto, HASH, str=JSON.stringify;
 if(WINDOW){
   window.Buffer={
-    from(arr){
-      if(typeof arr!=="string") return Uint8Array.from(arr);
-      let u=Buffer.alloc(arr.length)
-      for(let i=0;i<arr.length;i++) u[i]=ab_map[i];
-      return u
-    },
     alloc(n){  return new Uint8Array(n)  }
-  }
-  str=function(thing){
-    if(!(thing instanceof Uint8Array)) return JSON.stringify(thing);
-    return JSON.stringify(  {type:"Buffer",data:Object.values(thing)}  )
   }
   webcrypto=crypto
   HASH=browserHash
@@ -201,7 +191,6 @@ else{
   HASH =(buffer)=>crypto.createHash('sha256').update(buffer).digest('base64')
   let crypto=require('node:crypto')
   webcrypto=crypto.webcrypto
-  str=JSON.stringify
 }
 const {floor,ceil,pow,round}=Math
 const range =(min,max)=> floor(random()*(max-min))+min
@@ -262,13 +251,13 @@ function makeTest(tries, B=1024, a1=0, a2=256){
     (old[i]=buffer[index], buffer[index]=NEW);
   }
   
-  let array=Array.from(buffer)
+  let data=btoa(ab2str(buffer))
   chars.forEach((a,i)=> buffer[a[0]]=old[i] )
-  return [str({array,hash:HASH(buffer),chars,a1,a2,times}),str(buffer)]
+  return [str({data,hash:HASH(buffer),chars,a1,a2,times}),ab2str(buffer)]
 }
 function takeTest(input){
-  const {array,hash,chars,a1,a2,times}=JSON.parse(input)
-  let buffer=Buffer.from(array), i=0
+  const {data,hash,chars,a1,a2,times}=JSON.parse(input)
+  let buffer=str2ab(atob(data)), i=0
   
   for(i=0;i<times;i++){
     //applies +1 or edits buffer to the possible combination
@@ -284,12 +273,12 @@ function takeTest(input){
     if(HASH(buffer)===hash) break;
   }
   
-  return str(buffer)
+  return ab2str(buffer)
 }
 
 function takeTestBrowser(input){ //purely for testing
-  const {array,hash,chars,a1,a2,times}=JSON.parse(input)
-  let buffer=Buffer.from(array), i=0
+  const {data,hash,chars,a1,a2,times}=JSON.parse(input)
+  let buffer=str2ab(atob(data)), i=0
   
   for(i=0;i<times;i++){
     //applies +1 or edits buffer to the possible combination
@@ -305,7 +294,7 @@ function takeTestBrowser(input){ //purely for testing
     if(browserHash(buffer)===hash) break;
   }
   
-  return str(buffer)
+  return ab2str(buffer)
 }
 
 
