@@ -192,7 +192,7 @@ else{
   let crypto=require('node:crypto')
   webcrypto=crypto.webcrypto
 }
-const {floor,ceil,pow,round}=Math
+const {floor,ceil,pow,round,log2,min:MIN,max:MAX}=Math
 const range =(min,max)=> floor(random()*(max-min))+min
 const random=_=> webcrypto.getRandomValues(new Uint32Array(1))[0] / pow(2,32)
 const curve =(num,min,max)=> num<min? max-(min-num): min+((num-min)%(max-min))
@@ -204,11 +204,11 @@ function unique(n,record){
   return result
 }
 function numbers(n,a1,a2,limit){
-  let list=[], min=2, ceiling=(a2-a1).toString(2).length
+  let list=[], min=2, ceiling=floor(log2(a2-a1))
   do{
     list.length=0
     while(n>1){
-      let power=Math.min( ceiling, n.toString(2).length-1 )
+      let power=MIN( ceiling, n.toString(2).length-1 )
       let divisor=pow( 2, range(1,power) )
       list.push( (n/=divisor,[divisor/-2+1,divisor/2]) )
     }
@@ -222,7 +222,7 @@ function makeTestErrors(tries,B,a1,a2){
     if( [tries,B,a1,a2].some(arg=>typeof arg!=="number") ) throw new t("every argument must be a number");
     
     if(tries<4) throw new r("'tries' must be >= 4");
-    if(B<1) throw new r("Buffer length, 'B' must be >=1");
+    if(B<1||B>65535) throw new r("Buffer length, 'B' must be >=1 and less than 65536");
     if(a1<0) throw new r("'a1' cannot be less than 0; no index in a buffer is negative");
     if(a2>256) throw new r("every index in a buffer goes up to 255, thus 'a2' must be <=256");
     if(a2-a1<4||(a2-a1)%2) throw new r("'a2' must be > 'a1' by an EVEN difference of at least 4");
@@ -234,32 +234,54 @@ function makeTestErrors(tries,B,a1,a2){
   }
 }
 
-
-
-function makeTest(tries, B=1024, a1=0, a2=256){
+function ushort(num){
+  let rem=num%256;
+  return ab2str([(num-rem)/256, rem])
+}
+function to_ushort(str){
+  return (str_map[str[0]]*256) + str_map[str[1]];
+}
+function SERIAL(data,hash,chars,a1,a2){
+  let str=ab_map[a1]+ab_map[a2-1]+ushort(chars.length);
+  for(let i=0;i<chars.length;i++)
+    str+=ushort(chars[i][0]) + ab_map[chars[i][1][0]] + ab_map[chars[i][1][1]];
+  return str + hash + data;
+}
+function PARSE(string){
+  let a1=str_map[string[0]], a2=str_map[string[1]]+1
+  let length=to_ushort(string.substring(2,4)), chars=Array(length)
+  for(let i=0;i<chars.length;i++){
+    chars[i]=[
+      to_ushort(string.substring(i*4+4,i*4+6)), //index
+      [str_map[string[i*4+6]],  str_map[string[i*4+7]]] //[min,max]
+    ];
+  }
+  let hash=string.substring(4*length+4,4*length+48), data=string.substr(4*length+48)
+  return [str2ab(data),hash,chars,a1,a2];
+}
+function makeTest(tries=16**4, B=1024, a1=0, a2=256){
   makeTestErrors(tries,B,a1,a2) //check for errors from arguments/parameters
   
-  let variation=numbers(tries,a1,a2,B), C=variation.length, temp={}, times=1
+  let variation=numbers(tries,a1,a2,B), C=variation.length, temp={}
   let buffer=Buffer.alloc(B), chars=Array(C), old=Array(C)
   for(let i=0;i<B;i++) buffer[i]=range(a1,a2);
   
   for(let i=0;i<C;i++){
-    let [x1,x2]=variation[i]; times*=1+x2-x1
-    let index=unique(B,temp), change=range(x1,x2), num=change+buffer[index]
+    let [x1,x2]=variation[i], index=unique(B,temp)
+    let change=range(x1,x2), num=change+buffer[index]
     let NEW=num<a1? a2-(a1-num): ((num-a1)%(a2-a1))+a1
     chars[i]=[  index,  [ curve(NEW+x1,a1,a2), curve(NEW+x2,a1,a2) ]  ];
     (old[i]=buffer[index], buffer[index]=NEW);
   }
   
-  let data=btoa(ab2str(buffer))
+  let data=ab2str(buffer)
   chars.forEach((a,i)=> buffer[a[0]]=old[i] )
-  return [str({data,hash:HASH(buffer),chars,a1,a2,times}),ab2str(buffer)]
+  return [SERIAL(data,HASH(buffer),chars,a1,a2),ab2str(buffer)]
 }
 function takeTest(input){
-  const {data,hash,chars,a1,a2,times}=JSON.parse(input)
-  let buffer=str2ab(atob(data)), i=0
+  const [buffer,hash,chars,a1,a2]=PARSE(input);
   
-  for(i=0;i<times;i++){
+  while(true){
     //applies +1 or edits buffer to the possible combination
     for(let c=chars.length-1;c>=0;c--){
       let [index,[min,max]]=chars[c]
@@ -277,10 +299,9 @@ function takeTest(input){
 }
 
 function takeTestBrowser(input){ //purely for testing
-  const {data,hash,chars,a1,a2,times}=JSON.parse(input)
-  let buffer=str2ab(atob(data)), i=0
+  const [buffer,hash,chars,a1,a2]=PARSE(input);
   
-  for(i=0;i<times;i++){
+  while(true){
     //applies +1 or edits buffer to the possible combination
     for(let c=chars.length-1;c>=0;c--){
       let [index,[min,max]]=chars[c]
