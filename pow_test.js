@@ -18,13 +18,13 @@ var isAllTrue=true;
     isAllTrue=isAllTrue&&isTrue
   },1))
 
-  console.log('\ntest 2(twelve small):')
+  console.log('\ntest 2(sixty four small):')
   console.log(timeTaken(()=>{
-    let [quiz,answer]=makeTest(16**4,500,50,256)
+    let [quiz,answer]=makeTest(16**4,500,32,127)
     let result=takeTest(quiz)
     let isTrue=result===answer
     isAllTrue=isAllTrue&&isTrue
-  },12))
+  },64))
 
   console.log(`\ntest 3 ${red}SLOW${reset} (one large with browser hash):`)
   console.log(timeTaken(()=>{

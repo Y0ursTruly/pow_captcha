@@ -225,11 +225,10 @@ function makeTestErrors(tries,B,a1,a2){
     if(B<1||B>65535) throw new r("Buffer length, 'B' must be >=1 and less than 65536");
     if(a1<0) throw new r("'a1' cannot be less than 0; no index in a buffer is negative");
     if(a2>256) throw new r("every index in a buffer goes up to 255, thus 'a2' must be <=256");
-    if(a2-a1<4||(a2-a1)%2) throw new r("'a2' must be > 'a1' by an EVEN difference of at least 4");
+    if(a2-a1<4) throw new r("'a2' must be > 'a1' by a difference of at least 4");
     
     if(!Number.isSafeInteger(tries)) throw new r("count of 'tries' is an unsafe integer (too high)");
-    if(tries.toString(2).includes('1',1)) throw new r("'tries' must be (2 to the N) where N is a whole number >=2");
-    //for the amount of tries, it means 1(only 0s trailing), or N=log2(tries) is a whole number
+    if(tries!==2**log2(tries)) throw new r("'tries' must be (2 to the N) where N is a whole number >=2");
     makeTestCache[""+tries+'-'+B+'-'+a1+'-'+a2]=true
   }
 }
