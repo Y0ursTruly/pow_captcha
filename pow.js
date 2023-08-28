@@ -1,5 +1,5 @@
 (function(){
-const WINDOW=typeof window!=="undefined"
+const WINDOW=typeof window!=="undefined"? window: typeof self!=="undefined"?self: false;
 let ab_map=[], str_map={__proto__:null} //arrayBuffer_map[number]=letter, string_map[letter]=number
 for(let i=0;i<256;i++){
   ab_map[i]=String.fromCharCode(i);
@@ -179,16 +179,18 @@ let browserHash=(function() { //adapted from https://github.com/dchest/fast-sha2
   }
 })();
 
-var webcrypto, HASH, str=JSON.stringify;
-if(WINDOW){
-  window.Buffer={
+var Worker, webcrypto, HASH, str=JSON.stringify;
+if(WINDOW){ //browser
+  Worker=WINDOW.Worker
+  WINDOW.Buffer={
     alloc(n){  return new Uint8Array(n)  }
   }
   webcrypto=crypto
   HASH=browserHash
 }
-else{
+else{ //nodejs
   HASH =(buffer)=>crypto.createHash('sha256').update(buffer).digest('base64')
+  Worker=require('node:worker_threads').Worker
   let crypto=require('node:crypto')
   webcrypto=crypto.webcrypto
 }
@@ -317,7 +319,35 @@ function takeTestBrowser(input){ //purely for testing
   return ab2str(buffer)
 }
 
+const mainFN=arguments.callee
+async function takeTestAsync(input){
+  let script=`(${mainFN.toString()})(true);\n`
+  script+=WINDOW? ``: `(require("node:worker_threads")).parentPort.`
+  script+=`postMessage(  ${!WINDOW?"module.exports.":""}takeTest(atob("${ btoa(input) }"))  )`
+  return new Promise(function(result){
+    if(WINDOW){
+      let workerURL=URL.createObjectURL(
+        new Blob([script],{type:'text/javascript'})
+      )
+      console.log()
+      let worker=new Worker(workerURL)
+      URL.revokeObjectURL(workerURL)
+      worker.onmessage=function(output){
+        worker.terminate()
+        result(output.data)
+      }
+    }
+    else{
+      let worker=new Worker(script,{eval:true})
+      worker.on('message',function(output){
+        worker.terminate()
+        result(output)
+      })
+    }
+  })
+}
 
-if(!WINDOW) module.exports={makeTest,takeTest,takeTestBrowser};
-else (window.makeTest=makeTest, window.takeTest=takeTest);
+
+if(!WINDOW) module.exports={makeTest, takeTest, takeTestBrowser, takeTestAsync};
+else (WINDOW.makeTest=makeTest, WINDOW.takeTest=takeTest, WINDOW.takeTestAsync=takeTestAsync);
 })()
