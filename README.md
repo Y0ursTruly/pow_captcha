@@ -28,10 +28,7 @@ There are 3 functions that are exported for use
       <ul>
         <li><b>Description: </b>This function generates a cryptographic quiz based on the arguments given. Arguments in this function have <a href="https://github.com/Y0ursTruly/pow_captcha/blob/master/pow.js#L221">these constraints</a></li>
         <li><b>Returns: </b>
-<pre>[
-  string that looks like garbage but is the cryptographic quiz(hash of correct buffer, incorrect buffer, ranges of where to modify when guessing),
-  another string that looks like garbage but is the solution to the produced cryptographic quiz :D
-]</pre>
+<pre>string that looks like garbage but is the cryptographic quiz(hash of correct buffer, incorrect buffer, ranges of where to modify when guessing)</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
