@@ -192,7 +192,7 @@ else{ //nodejs
   HASH =(buffer)=>crypto.createHash('sha256').update(buffer).digest('base64')
   Worker=require('node:worker_threads').Worker
   let crypto=require('node:crypto')
-  webcrypto=crypto.webcrypto||crypto;
+  webcrypto=crypto.webcrypto||crypto
 }
 const {floor,ceil,pow,round,log2,min:MIN,max:MAX}=Math
 const range =(min,max)=> floor(random()*(max-min))+min
