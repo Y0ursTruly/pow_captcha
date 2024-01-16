@@ -28,7 +28,10 @@ There are 3 functions that are exported for use
       <ul>
         <li><b>Description: </b>This function generates a cryptographic quiz based on the arguments given. Arguments in this function have <a href="https://github.com/Y0ursTruly/pow_captcha/blob/master/pow.js#L221">these constraints</a></li>
         <li><b>Returns: </b>
-<pre>string that looks like garbage but is the cryptographic quiz(hash of correct buffer, incorrect buffer, ranges of where to modify when guessing)</pre>
+<pre>[
+  string that looks like garbage but is the cryptographic quiz(hash of correct buffer, incorrect buffer, ranges of where to modify when guessing),
+  string that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)
+]</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
@@ -47,7 +50,7 @@ There are 3 functions that are exported for use
       <ul>
         <li><b>Description: </b>This function solves a cryptographic quiz based on the string input given</li>
         <li><b>Returns: </b>
-<pre>string that looks like garbage but is the solution of the given cryptographic quiz(the correct buffer)</pre>
+<pre>string that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
@@ -63,7 +66,7 @@ There are 3 functions that are exported for use
       <ul>
         <li><b>Description: </b>To avoid hanging the process that called it, this runs the takeTest function in a worker thread</li>
         <li><b>Returns: </b>
-<pre>string that looks like garbage but is the solution of the given cryptographic quiz(the correct buffer)</pre>
+<pre>string that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
