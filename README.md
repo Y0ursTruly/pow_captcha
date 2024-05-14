@@ -35,8 +35,8 @@ There are 3 functions that are exported for use
         </li>
         <li><b>Arguments: </b>
           <ul>
-            <li><b>tries </b><code>number (default is 16^4)</code> The maximum amount of combinations(of the buffer) that might get guessed before arriving at the solution. In the cryptographic quiz, this is expressed in one or more ranges that multiply up to this number</li>
-            <li><b>B </b><code>number (default is 1024)</code> The length of the buffer. This will not affect tries because specific ranges across the buffer are chosen, but it prevents an attacker from prehashing all combinations of the buffer</li>
+            <li><b>tries </b><code>number (default is 2^20 or 1048576)</code> The maximum amount of combinations(of the buffer) that might get guessed before arriving at the solution. In the cryptographic quiz, this is expressed in one or more ranges that multiply up to this number</li>
+            <li><b>B </b><code>number (default is 64)</code> The length of the buffer. This will not affect tries because specific ranges across the buffer are chosen, but it prevents an attacker from prehashing all combinations of the buffer</li>
             <li><b>a1 </b><code>number (default is 0)</code> The lowest value a byte can be. For example if a1 is 65, there will be no byte less than 'A' in the buffer</li>
             <li><b>a2 </b><code>number (default is 256)</code> The highest value a byte can be plus one. For example if a2 is 91, there will be no byte greater than 'Z' in the buffer</li>
           </ul>

@@ -260,7 +260,7 @@ function PARSE(string){
   let hash=string.substring(4*length+4,4*length+48), data=string.substr(4*length+48)
   return [str2ab(data),hash,chars,a1,a2];
 }
-function makeTest(tries=16**4, B=1024, a1=0, a2=256){
+function makeTest(tries=2**20, B=64, a1=0, a2=256){
   makeTestErrors(tries,B,a1,a2) //check for errors from arguments/parameters
   
   let variation=numbers(tries,a1,a2,B), C=variation.length, temp={}
