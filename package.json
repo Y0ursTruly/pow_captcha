@@ -1,6 +1,6 @@
 {
   "name": "pow_captcha",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A proof of work captcha that forces a computer to brute force until it finds a correct output to the input given by using hash logic",
   "main": "pow.js",
   "scripts": {
