@@ -3,11 +3,11 @@
 # Usage
 ### Installation
 ```
-git clone https://github.com/Y0ursTruly/pow_captcha.git
+npm install pow_captcha
 ```
 ### Importing
 ```
-const {makeTest, takeTest, takeTestAsync} = require('path/to/pow_captcha');
+const {makeTest, takeTest, takeTestAsync} = require('pow_captcha');
 ```
 
 ## Concept (what is this)
