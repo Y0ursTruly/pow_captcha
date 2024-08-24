@@ -1,12 +1,12 @@
 /**
  * Generates a cryptographic quiz based on the arguments provided.
  * @param tries - The maximum number of combinations to guess before finding the solution (default: 2^20 or 1048576).
- * @param B - The length of the buffer (default: 64).
+ * @param B - The length of the buffer OR a given buffer (default: 64).
  * @param a1 - The lowest value a byte can be (default: 0).
  * @param a2 - The highest value a byte can be plus one (default: 256).
  * @returns A tuple containing the cryptographic quiz and the solution.
  */
-export function makeTest(tries?: number, B?: number, a1?: number, a2?: number): [string, string];
+export function makeTest(tries?: number, B?: number|Buffer, a1?: number, a2?: number): [string, string];
 
 /**
  * Solves a cryptographic quiz based on the provided input string.

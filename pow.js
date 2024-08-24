@@ -59,6 +59,7 @@
   }
   const makeTestCache=new Map()
   function makeTestErrors(tries,B,a1,a2){
+    if(Buffer.isBuffer(B)) B=B.length;
     if(!makeTestCache.has(""+tries+'-'+B+'-'+a1+'-'+a2)){ //check for errors if these arguments haven't been tested in the process yet
       let r=RangeError, t=TypeError;
       if( [tries,B,a1,a2].some(arg=>typeof arg!=="number") ) throw new t("every argument must be a number");
@@ -106,12 +107,15 @@
   function makeTest(tries=2**20, B=64, a1=0, a2=256){
     makeTestErrors(tries,B,a1,a2) //check for errors from arguments/parameters
     
-    let variation=numbers(tries,a1,a2,B), C=variation.length, temp={}
-    let buffer=Buffer.alloc(B), chars=Array(C), old=Array(C)
-    for(let i=0;i<B;i++) buffer[i]=range(a1,a2);
+    let variation=numbers(tries,a1,a2,B.length||B), C=variation.length, temp={}
+    let chars=Array(C), old=Array(C), buffer=B
+    if(typeof B==="number"){
+      buffer=Buffer.alloc(B)
+      for(let i=0;i<B;i++) buffer[i]=range(a1,a2);
+    }
     
     for(let i=0;i<C;i++){
-      let [x1,x2]=variation[i], index=unique(B,temp)
+      let [x1,x2]=variation[i], index=unique(B.length||B,temp)
       let change=range(x1,x2), num=change+buffer[index]
       let NEW=num<a1? a2-(a1-num): ((num-a1)%(a2-a1))+a1
       chars[i]=[  index,  [ curve(NEW+x1,a1,a2), curve(NEW+x2,a1,a2) ]  ];

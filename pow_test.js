@@ -1,7 +1,7 @@
 const {makeTest,takeTest,takeTestBrowser}=require('./pow.js')
 let red='\x1b[1m\x1b[31m', reset='\x1b[0m'
 
-function timeTaken(user_function,times_testing){
+function timeTaken(user_function,times_testing=1){
   //the purpose is simple, testing the speed of a function
   let start=performance.now()
   for(let i=0;i<times_testing;i++) user_function();
@@ -30,6 +30,16 @@ var isAllTrue=true;
   console.log(timeTaken(()=>{
     let result=takeTestBrowser(Lquiz)
     let isTrue=result===Lanswer
+    isAllTrue=isAllTrue&&isTrue
+  },1))
+
+  console.log(`\ntest 4(specified buffer test):`)
+  console.log(timeTaken(()=>{
+    let chosen_text='abcdefghijklmnopqrstuvwxyz'
+    let buffer=Buffer.from(chosen_text)
+    let [quiz,answer]=makeTest(16**5,buffer)
+    let result=takeTest(quiz)
+    isTrue=result===answer && result===chosen_text
     isAllTrue=isAllTrue&&isTrue
   },1))
 
