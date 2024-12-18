@@ -36,7 +36,12 @@
   }
   const {floor,ceil,pow,round,log2,min:MIN,max:MAX}=Math
   const range =(min,max)=> floor(random()*(max-min))+min
-  const random=_=> webcrypto.getRandomValues(new Uint32Array(1))[0] / pow(2,32)
+  let rIndex=0, u32arr=new Uint32Array(2**8), pow32=pow(2,32)
+  function random(){
+    const result=(rIndex? u32arr[rIndex]: webcrypto.getRandomValues(u32arr)[rIndex]) / pow32
+    rIndex = (rIndex+1)%2**8
+    return result
+  }
   const curve =(num,min,max)=> num<min? max-(min-num): min+((num-min)%(max-min))
   function unique(n,record){
     let result=null
@@ -121,7 +126,7 @@
       chars[i]=[  index,  [ curve(NEW+x1,a1,a2), curve(NEW+x2,a1,a2) ]  ];
       (old[i]=buffer[index], buffer[index]=NEW);
     }
-    
+
     let data=ab2str(buffer)
     chars.forEach((a,i)=> buffer[a[0]]=old[i] )
     return [SERIAL(data,HASH(buffer),chars,a1,a2),ab2str(buffer)]
