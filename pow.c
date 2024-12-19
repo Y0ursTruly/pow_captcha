@@ -1,6 +1,13 @@
 #include <stdlib.h>
 #include <math.h>
-#include <openssl/sha.h>
+#include <tomcrypt.h>
+void SHA256(const unsigned char *data, unsigned int length, unsigned char *output){
+  //created because C for webassembly can't be compiled while using openssl
+  hash_state md;
+  sha256_init(&md);
+  sha256_process(&md, data, length);
+  sha256_done(&md, output);
+}
 
 
 typedef struct String{
