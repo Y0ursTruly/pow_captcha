@@ -3,10 +3,7 @@ cd emsdk
 ./emsdk install latest
 ./emsdk activate latest
 . ./emsdk_env.sh
-
-cd ..
-git clone https://github.com/libtom/libtomcrypt.git
-cd libtomcrypt
+echo '. /workspaces/*/emsdk/emsdk_env.sh' >> $HOME/.bashrc
 
 
 # emcc pow.c -o takeTest.js -sEXPORTED_FUNCTIONS=_takeTest,_freeString -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
