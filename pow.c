@@ -73,7 +73,7 @@ struct ParsedInput *PARSE(String *s){
 
   starting=(parsed->length<<2)+4;
   parsed->hash = subString(s,starting,starting+32);
-  parsed->buffer = substring(s,starting+32,s->length);
+  parsed->buffer = subString(s,starting+32,s->length);
   return parsed;
 }
 void freeParsed(struct ParsedInput *parsed){
