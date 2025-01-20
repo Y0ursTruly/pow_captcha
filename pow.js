@@ -197,10 +197,8 @@
       }
     })
   }
-  const bin=str2ab(atob("")).buffer
-  const wasm=WebAssembly.instantiate(bin,{
-    //
-  })
+  let bin=str2ab(atob("")).buffer, wasm;
+  WebAssembly.instantiate(bin).then(instance=>wasm=instance);
   
   
   if(!WINDOW) module.exports={makeTest, takeTest, takeTestBrowser, takeTestAsync};
