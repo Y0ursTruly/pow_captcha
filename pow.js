@@ -197,6 +197,10 @@
       }
     })
   }
+  const bin=str2ab(atob("")).buffer
+  const wasm=WebAssembly.instantiate(bin,{
+    //
+  })
   
   
   if(!WINDOW) module.exports={makeTest, takeTest, takeTestBrowser, takeTestAsync};
