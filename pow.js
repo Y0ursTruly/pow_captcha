@@ -1,5 +1,11 @@
-(function(){
+(function(isWorker){
   const WINDOW=typeof window!=="undefined"? window: typeof self!=="undefined"?self: false;
+  let _input=null, _flag=function(){}, _module={__proto__:null}, _ready=null, ready=new Promise(r=>_ready=r)
+  //the idea here is to avoid a race condition between Worker.onmessage and WebAssembly.instanciate before it even has a chance to begin
+  function _synchronise(fn){
+    _flag = fn
+    if(_input!==null || !isWorker) _flag();
+  }
   let ab_map=[], str_map={__proto__:null} //arrayBuffer_map[number]=letter, string_map[letter]=number
   for(let i=0;i<256;i++){
     ab_map[i]=String.fromCharCode(i);
@@ -22,6 +28,7 @@
   var Worker, webcrypto, HASH, str=JSON.stringify;
   if(WINDOW){ //browser
     Worker=WINDOW.Worker
+    if(isWorker) Worker.onmessage=res=>(_input=res.data,_flag());
     WINDOW.Buffer={
       alloc(n){  return new Uint8Array(n)  }
     }
@@ -31,6 +38,7 @@
   else{ //nodejs
     HASH =(buffer)=>crypto.createHash('sha256').update(buffer).digest('binary')
     Worker=require('node:worker_threads').Worker
+    if(isWorker) Worker.onmessage=res=>(_input=res.data,_flag());
     let crypto=require('node:crypto')
     webcrypto=crypto.webcrypto||crypto
   }
@@ -64,7 +72,7 @@
   }
   const makeTestCache=new Map()
   function makeTestErrors(tries,B,a1,a2){
-    if(Buffer.isBuffer(B)) B=B.length;
+    if(typeof B!=="number") B=B.length;
     if(!makeTestCache.has(""+tries+'-'+B+'-'+a1+'-'+a2)){ //check for errors if these arguments haven't been tested in the process yet
       let r=RangeError, t=TypeError;
       if( [tries,B,a1,a2].some(arg=>typeof arg!=="number") ) throw new t("every argument must be a number");
@@ -94,24 +102,11 @@
       str+=ushort(chars[i][0]) + ab_map[chars[i][1][0]] + ab_map[chars[i][1][1]];
     return str + hash + data;
   }
-  function PARSE(string){ //parses the test string
-    let a1=str_map[string[0]], a2=str_map[string[1]]+1
-    let length=to_ushort(string.substring(2,4)), chars=Array(length)
-    for(let i=0;i<chars.length;i++){
-      chars[i]=[
-        to_ushort(string.substring(i*4+4,i*4+6)), //index
-        [str_map[string[i*4+6]],  str_map[string[i*4+7]]] //[min,max]
-      ];
-    }
-    let hash=string.substring(4*length+4,4*length+36), data=string.substr(4*length+36)
-    //chars is the array of where buffer is edited and the range the correct byte can be in
-    //the test string is in format [a1(1 byte),  a2(1 byte),  length(2 bytes),  chars(length*4 bytes),  hash(32 bytes),  buffer(everything after)]
-    //implicitly, there cannot be more than 65535 places where the buffer is edited 
-    return [str2ab(data),hash,chars,a1,a2];
-  }
   function makeTest(tries=2**20, B=64, a1=0, a2=256){
     makeTestErrors(tries,B,a1,a2) //check for errors from arguments/parameters
+    let origB=B
     
+    if(typeof B==="string") B=str2ab(B);
     let variation=numbers(tries,a1,a2,B.length||B), C=variation.length, temp={}
     let chars=Array(C), old=Array(C), buffer=B
     if(typeof B==="number"){
@@ -129,59 +124,35 @@
 
     let data=ab2str(buffer)
     chars.forEach((a,i)=> buffer[a[0]]=old[i] )
-    return [SERIAL(data,HASH(buffer),chars,a1,a2),ab2str(buffer)]
+    let quiz=SERIAL(data,HASH(buffer),chars,a1,a2), answer=buffer
+    if(typeof origB==="string") answer=ab2str(answer); //string
+    else if(typeof origB==="number" || Buffer.isBuffer(origB)) quiz=str2ab(quiz); //buffer
+    else{ //Uint8Array
+      quiz=new Uint8Array(str2ab(quiz))
+      answer=new Uint8Array(answer)
+    }
+    return [quiz,answer]
   }
   function takeTest(input){
-    const [buffer,hash,chars,a1,a2]=PARSE(input);
-    
-    while(true){
-      //applies +1 or edits buffer to the possible combination
-      for(let c=chars.length-1;c>=0;c--){
-        let [index,[min,max]]=chars[c]
-        let base=chars[c].base||( chars[c].base=1+(max>min? max-min: (a2-min)+(max-a1)) )
-        let MIN=min-a1, num=(buffer[index]+1)-a1, A2=a2-a1
-        let addition=(( (num<MIN?num+MIN+(A2-MIN):num)-MIN )%base)+MIN
-        buffer[index]=(addition%A2)+a1
-        if(buffer[index]!==min) break;
-      }
-      //hashes the buffer and checks
-      if(HASH(buffer)===hash) break;
-    }
-    
-    return ab2str(buffer)
-  }
-  
-  function takeTestBrowser(input){ //purely for testing
-    const [buffer,hash,chars,a1,a2]=PARSE(input);
-    
-    while(true){
-      //applies +1 or edits buffer to the possible combination
-      for(let c=chars.length-1;c>=0;c--){
-        let [index,[min,max]]=chars[c]
-        let base=chars[c].base||( chars[c].base=1+(max>min? max-min: (a2-min)+(max-a1)) )
-        let MIN=min-a1, num=(buffer[index]+1)-a1, A2=a2-a1
-        let addition=(( (num<MIN?num+MIN+(A2-MIN):num)-MIN )%base)+MIN
-        buffer[index]=(addition%A2)+a1
-        if(buffer[index]!==min) break;
-      }
-      //hashes the buffer and checks
-      if(browserHash(buffer)===hash) break;
-    }
-    
-    return ab2str(buffer)
+    const {allocate_buffer,makeString,takeTest,freeString,u32heap,u8heap,read_buffer}=_module
+    const string=makeString(allocate_buffer(input),input.length)
+    const ret=takeTest(string), result_str=u32heap[ret/4], result_length=u32heap[ret/4+1]
+    let result=read_buffer(result_str,result_length,input) //input given for output type to match
+    freeString(string)
+    return result
   }
   
   const mainFN=arguments.callee
   async function takeTestAsync(input){
+    if(typeof input!=="string") input=ab2str(string)
     let script=`(${mainFN.toString()})(true);\n`
-    script+=WINDOW? ``: `(require("node:worker_threads")).parentPort.`
-    script+=`postMessage(  ${!WINDOW?"module.exports.":""}takeTest(atob("${ btoa(input) }"))  )`
     return new Promise(function(result){
       if(WINDOW){
         let workerURL=URL.createObjectURL(
           new Blob([script],{type:'text/javascript'})
         )
         let worker=new Worker(workerURL)
+        worker.postMessage(input)
         URL.revokeObjectURL(workerURL)
         worker.onmessage=function(output){
           worker.terminate()
@@ -197,11 +168,46 @@
       }
     })
   }
-  let bin=str2ab(atob("")).buffer, wasm;
-  WebAssembly.instantiate(bin).then(instance=>wasm=instance);
+  //const bin=str2ab(atob("to replace with btoa of raw wasm file")).buffer;
+  const bin=(require('fs')).readFileSync((require('path')).join(__dirname,'takeTest.wasm'))
+  //takeTest.wasm as an instance of ArrayBuffer
+  WebAssembly.instantiate(bin).then(function(instance){
+    wasm=instance
+    const {memory,malloc,takeTest,freeString,makeString}=wasm.instance.exports;
+    const u8heap=new Uint8Array(memory.buffer), u32heap=new Uint32Array(memory.buffer)
+    function allocate_buffer(str){
+      const ptr=malloc(str.length), is_string=typeof str==="string"
+      for(let i=0;i<str.length;i++)
+        u8heap[i+ptr]=is_string? str_map[str[i]]: str[i];
+      return ptr
+    }
+    function read_buffer(ptr,len,input){
+      const is_string=typeof input==="string"
+      let result=is_string?  "":  Buffer.isBuffer(input)? Buffer.alloc(input.length): new Uint8Array(input.length)
+      for(let i=0;i<len;i++){
+        if(is_string) result+=ab_map[u8heap[ptr+i]];
+        else result[i]=u8heap[ptr+i];
+      }
+      return result
+    }
+    _module.takeTest=takeTest
+    _module.freeString=freeString
+    _module.makeString=makeString
+    _module.u8heap=u8heap
+    _module.u32heap=u32heap
+    _module.allocate_buffer=allocate_buffer
+    _module.read_buffer=read_buffer
+    _synchronise(function(){
+      _ready()
+      if(isWorker){
+        if(WINDOW) postMessage(takeTest(_input));
+        else (require("node:worker_threads")).parentPort.postMessage(module.exports.takeTest(_input));
+      }
+    })
+  });
   
   
-  if(!WINDOW) module.exports={makeTest, takeTest, takeTestBrowser, takeTestAsync};
-  else (WINDOW.makeTest=makeTest, WINDOW.takeTest=takeTest, WINDOW.takeTestAsync=takeTestAsync);
+  if(!WINDOW) module.exports={makeTest, takeTest, takeTestAsync, ready};
+  else (WINDOW.makeTest=makeTest, WINDOW.takeTest=takeTest, WINDOW.takeTestAsync=takeTestAsync, WINDOW.ready=ready);
   })()
   
