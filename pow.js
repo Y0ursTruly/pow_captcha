@@ -168,10 +168,51 @@
       }
     })
   }
+  
+  
+  //WASM stuff start
+  function abort(what){
+    let e=new WebAssembly.RuntimeError(what)
+    throw e
+  }
+  function printChar(stream,curr){
+    //I do not care for printing from wasm side ngl so yeah I'd do nothing here
+  }
+  function _emscripten_resize_heap(requestedSize){
+    let oldSize=_module.u8heap.length
+    requestedSize>>>=0
+    abort(`Cannot enlarge memory arrays to size ${requestedSize} bytes (OOM). Either (1) compile with -sINITIAL_MEMORY=X with X higher than the current value ${HEAP8.length}, (2) compile with -sALLOW_MEMORY_GROWTH which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with -sABORTING_MALLOC=0`);
+  }
+  function __abort_js(){ abort('native code called abort()') }
+  function _fd_close(fd){
+    abort('fd_close called without SYSCALLS_REQUIRE_FILESYSTEM')
+  }
+  function _fd_seek(fd, offset, whence, newOffset){return 70}
+  function _fd_write(fd, iov, iovcnt, pnum){
+    let num=0, HEAPU32=_module.u32heap, HEAPU8=_module.u8heap
+    for(let i=0;i<iovcnt;i++){
+      let ptr=HEAPU32[((iov)>>2)]
+      let len=HEAPU32[(((iov)+(4))>>2)]
+      iov+=8
+      for(let j=0;j<len;j++)
+        printChar(fd, HEAPU8[ptr+j]);
+      num+=len
+    }
+    HEAPU32[((pnum)>>2)]=num
+    return 0
+  }
+  //imports are needed, thanks emcc >:(
+  const imports={
+    _abort_js: __abort_js,
+    emscripten_resize_heap: _emscripten_resize_heap,
+    fd_close: _fd_close,
+    fd_seek: _fd_seek,
+    fd_write: _fd_write
+  }
+  
   //const bin=str2ab(atob("to replace with btoa of raw wasm file")).buffer;
-  const bin=(require('fs')).readFileSync((require('path')).join(__dirname,'takeTest.wasm'))
-  //takeTest.wasm as an instance of ArrayBuffer
-  WebAssembly.instantiate(bin).then(function(instance){
+  const bin=(require('fs')).readFileSync((require('path')).join(__dirname,'takeTest.wasm')) //takeTest.wasm as an instance of ArrayBuffer
+  WebAssembly.instantiate(bin,{env:imports,wasi_snapshot_preview1:imports}).then(function(instance){
     wasm=instance
     const {memory,malloc,takeTest,freeString,makeString}=wasm.instance.exports;
     const u8heap=new Uint8Array(memory.buffer), u32heap=new Uint32Array(memory.buffer)
@@ -205,6 +246,7 @@
       }
     })
   });
+  //WASM stuff stop
   
   
   if(!WINDOW) module.exports={makeTest, takeTest, takeTestAsync, ready};
