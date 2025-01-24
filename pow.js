@@ -224,7 +224,7 @@
     }
     function read_buffer(ptr,len,input){
       const is_string=typeof input==="string"
-      let result=is_string?  "":  Buffer.isBuffer(input)? Buffer.alloc(input.length): new Uint8Array(input.length)
+      let result=is_string?  "":  Buffer.isBuffer(input)? Buffer.alloc(len): new Uint8Array(len)
       for(let i=0;i<len;i++){
         if(is_string) result+=ab_map[u8heap[ptr+i]];
         else result[i]=u8heap[ptr+i];
