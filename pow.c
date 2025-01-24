@@ -170,19 +170,19 @@ typedef struct ParsedInput{
 }ParsedInput;
 struct ParsedInput *PARSE(String *s){
   unsigned short i=0, starting;
-  struct Uncertainty u;
+  struct Uncertainty *U;
   struct ParsedInput *parsed = (struct ParsedInput*)malloc(sizeof(struct ParsedInput));
   parsed->a1 = s->str[0];
   parsed->a2 = s->str[1]+1;
   parsed->length = ((s->str[2])<<8) + s->str[3];
   parsed->uncertainties = (struct Uncertainty*)malloc(sizeof(struct Uncertainty)*parsed->length);
+  U = parsed->uncertainties;
 
   for(i=0;i<parsed->length;i++){
-    u = parsed->uncertainties[i];
-    u.index = ((s->str[ (i<<2)+4 ])<<8) + s->str[ (i<<2)+5 ];
-    u.min = s->str[ (i<<2)+6 ];
-    u.max = s->str[ (i<<2)+7 ];
-    u.base = 1+(u.max>u.min? u.max-u.min: (parsed->a2-u.min)+(u.max-parsed->a1));
+    U[i].index = ((s->str[ (i<<2)+4 ])<<8) + s->str[ (i<<2)+5 ];
+    U[i].min = s->str[ (i<<2)+6 ];
+    U[i].max = s->str[ (i<<2)+7 ];
+    U[i].base = 1+(U[i].max>U[i].min? U[i].max-U[i].min: (parsed->a2-U[i].min)+(U[i].max-parsed->a1));
   }
 
   starting=(parsed->length<<2)+4;
@@ -203,7 +203,7 @@ struct String *takeTest(struct String *input){
   unsigned short c, MIN, num, A2, addition;
   struct Uncertainty u;
   struct ParsedInput *parsed = PARSE(input);
-
+  
   while(1){
     //in each iteration, an "addition of 1" is done on the "number"
     //in the "number" each "digit" is defined by an instance of Uncertainty
