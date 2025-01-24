@@ -208,7 +208,7 @@ struct String *takeTest(struct String *input){
     //in each iteration, an "addition of 1" is done on the "number"
     //in the "number" each "digit" is defined by an instance of Uncertainty
     //each uncertainty has the range of possible values(max,min) of a byte(index) in the buffer
-    for(c=parsed->length-1;c>=0;c--){
+    for(c=parsed->length;c-->0;){
       u = parsed->uncertainties[c];
       MIN = u.min-parsed->a1;
       num = (parsed->buffer->str[u.index]+1) - parsed->a1;
