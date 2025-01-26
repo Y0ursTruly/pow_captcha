@@ -1,4 +1,5 @@
 //gcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest2.o takeTest2.c ../BearSSL/build/libbearssl.a
+//emcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest2.js takeTest2.c ../BearSSL/build/libbearssl.a -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
 #include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
@@ -122,6 +123,7 @@ struct String *takeTest(struct String *input){
   return buffer;
 }
 
+/*
 #include <stdio.h>
 #include <sys/time.h>
 struct timeval start_time, stop_time;
@@ -143,3 +145,4 @@ int main(int argc, char **argv){
     printf("correct\nSolved in %llu microseconds\n",elapsed);
     return 0;
 }
+*/
