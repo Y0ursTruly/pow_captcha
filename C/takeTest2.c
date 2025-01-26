@@ -1,10 +1,9 @@
-//gcc takeTest2.c -I ../BearSSL/src -I ../BearSSL/inc
+//gcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest2.o takeTest2.c ../BearSSL/build/libbearssl.a
 #include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include "bearssl.h"
-#include "bearssl_hash.h"
+#include <bearssl.h>
 
 void SHA256(const uint8_t *input, size_t input_len, uint8_t *output){
     br_sha256_context ctx;
