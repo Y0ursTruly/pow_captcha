@@ -211,7 +211,7 @@
   }
   
   //const bin=str2ab(atob("to replace with btoa of raw wasm file")).buffer;
-  const bin=(require('fs')).readFileSync((require('path')).join(__dirname,'takeTest.wasm')) //takeTest.wasm as an instance of ArrayBuffer
+  const bin=(require('fs')).readFileSync((require('path')).join(__dirname,'C','takeTest.wasm')) //takeTest.wasm as an instance of ArrayBuffer
   WebAssembly.instantiate(bin,{env:imports,wasi_snapshot_preview1:imports}).then(function(instance){
     wasm=instance
     const {memory,malloc,takeTest,freeString,makeString}=wasm.instance.exports;
