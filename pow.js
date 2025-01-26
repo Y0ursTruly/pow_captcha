@@ -175,8 +175,19 @@
     let e=new WebAssembly.RuntimeError(what)
     throw e
   }
+  function assert(condition,text){
+    if(!condition) abort('Assertion failed'+(text?': '+text : ''));
+  }
+  const printCharBuffers=[null,[],[]]
   function printChar(stream,curr){
     //I do not care for printing from wasm side ngl so yeah I'd do nothing here
+    const buffer=printCharBuffers[stream], out=console.log.bind(console), err=console.error.bind(console)
+    assert(buffer)
+    if(curr===0||curr===10){
+      (stream===1?out:err)(ab2str(buffer));
+      buffer.length=0
+    }
+    else buffer.push(curr);
   }
   function _emscripten_resize_heap(requestedSize){
     let oldSize=_module.u8heap.length
@@ -201,7 +212,7 @@
     HEAPU32[((pnum)>>2)]=num
     return 0
   }
-  //imports are needed, thanks emcc >:(
+  //the weird 41 lines above are to recreate the imports that are needed, without the enormous js file emcc produces on compilation, thanks emcc >:(
   const imports={
     _abort_js: __abort_js,
     emscripten_resize_heap: _emscripten_resize_heap,

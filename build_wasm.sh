@@ -9,7 +9,7 @@ echo '. /workspaces/*/emsdk/emsdk_env.sh' >> $HOME/.bashrc
 cd ..
 
 cd C
-emcc takeTest.c -o takeTest.js -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
+emcc takeTest.c -o takeTest.js -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
 rm takeTest.js
 # because the WebAssembly interface is being manually handled >:D
 # gcc hash_wit...c -lssl -lcrypto
