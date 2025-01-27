@@ -1,9 +1,11 @@
-//gcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest2.o takeTest2.c ../BearSSL/build/libbearssl.a
-//emcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest2.js takeTest2.c ../BearSSL/build/libbearssl.a -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
+//gcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest.o takeTest.c ../BearSSL/build/libbearssl.a
+//emcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest.js takeTest.c ../BearSSL/build/libbearssl.a -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
+//emcc -I ../openssl/include -L ../openssl -o takeTest.js takeTest.c ../openssl/libcrypto.a -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
 #include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+//#include <openssl/sha.h> //either this line or the include statement and the SHA256 definition below it
 #include <bearssl.h>
 
 void SHA256(const uint8_t *input, size_t input_len, uint8_t *output){
