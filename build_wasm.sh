@@ -25,4 +25,6 @@ rm takeTest.js
 # gcc hash_wit...c -lssl -lcrypto
 #emconfigure ./Configure no-asm no-shared no-threads no-dso no-afalgeng linux-generic32 -DOPENSSL_NO_SECURE_MEMORY --prefix=$(pwd)/build --openssldir=$(pwd)/build/ssl
 #echo -e "CC = emcc\nCXX = em++\nAR=emar\nRANLIB=emranlib" >> Makefile
-#emmake make
+#emmake make -j $(nproc)
+#emmake make -j $(nproc) install
+#emcc -I ../openssl/include -L ../openssl -o takeTest.js takeTest.c ../openssl/libcrypto.a -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
