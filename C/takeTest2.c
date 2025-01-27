@@ -4,14 +4,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include <bearssl.h>
-
-void SHA256(const uint8_t *input, size_t input_len, uint8_t *output){
-    br_sha256_context ctx;
-    br_sha256_init(&ctx);
-    br_sha256_update(&ctx, input, input_len);
-    br_sha256_out(&ctx, output);
-}
+#include <openssl/sha.h>
 
 
 typedef struct String{

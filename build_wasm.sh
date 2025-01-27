@@ -13,7 +13,7 @@ fi
 if [ ! -d BearSSL ]; then
   git clone https://www.bearssl.org/git/BearSSL
   cd BearSSL
-  echo -e "CC = emcc\nCXX = em++" >> Makefile
+  echo -e "CC = emcc\nCXX = em++\nAR=emar\nRANLIB=emranlib" >> Makefile
   emmake make
   cd ..
 fi
@@ -23,3 +23,6 @@ emcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest.js takeTest.c ../BearSSL/
 rm takeTest.js
 # because the WebAssembly interface is being manually handled >:D
 # gcc hash_wit...c -lssl -lcrypto
+#emconfigure ./Configure no-asm no-shared no-threads no-dso no-afalgeng linux-generic32 -DOPENSSL_NO_SECURE_MEMORY --prefix=$(pwd)/build --openssldir=$(pwd)/build/ssl
+#echo -e "CC = emcc\nCXX = em++\nAR=emar\nRANLIB=emranlib" >> Makefile
+#emmake make
