@@ -23,3 +23,8 @@ export function takeTest(input: buffer): buffer;
  * @returns A promise that resolves to a string representing the solution of the cryptographic quiz.
  */
 export function takeTestAsync(input: buffer): Promise<buffer>;
+
+/**
+ * Resolves when the takeTest module is ready (because loading a wasm binary is asynchronous)
+ */
+export declare const ready: Promise<undefined>;

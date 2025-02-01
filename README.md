@@ -7,7 +7,7 @@ npm install pow_captcha
 ```
 ### Importing
 ```
-const {makeTest, takeTest, takeTestAsync} = require('pow_captcha');
+const {makeTest, takeTest, takeTestAsync, ready} = require('pow_captcha');
 ```
 
 ## Concept (what is this)
@@ -21,6 +21,8 @@ Now, this proof of work captcha utilises cryptography in a way that a cryptograp
 
 ## Exports
 There are 3 functions that are exported for use
+<br>But before that there is simply a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) named `ready` that will resolve when everything is ready; meaning when the wasm binary for takeTest has asynchronously loaded
+<br>What does this mean? The code to take the test (the one that takes a physical amount of time for a computer to solve) has been now written in C and compiled to something called [WebAssembly](https://developer.mozilla.org/en-US/docs/WebAssembly) for increased performance
 <ul>
   <li>
     <details>
@@ -29,14 +31,14 @@ There are 3 functions that are exported for use
         <li><b>Description: </b>This function generates a cryptographic quiz based on the arguments given. Arguments in this function have <a href="https://github.com/Y0ursTruly/pow_captcha/blob/master/pow.js#L221">these constraints</a></li>
         <li><b>Returns: </b>
 <pre>[
-  string that looks like garbage but is the cryptographic quiz(hash of correct buffer, incorrect buffer, ranges of where to modify when guessing),
-  string that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)
+  String|Buffer|Uint8Array that looks like garbage but is the cryptographic quiz(hash of correct buffer, incorrect buffer, ranges of where to modify when guessing),
+  String|Buffer|Uint8Array that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)
 ]</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
             <li><b>tries </b><code>number (default is 2^20 or 1048576)</code> The maximum amount of combinations(of the buffer) that might get guessed before arriving at the solution. In the cryptographic quiz, this is expressed in one or more ranges that multiply up to this number</li>
-            <li><b>B </b><code>number OR Buffer (default is 64)</code> The length of the buffer OR a chosen buffer. This will not affect tries because specific ranges across the buffer are chosen, but it prevents an attacker from prehashing all combinations of the buffer</li>
+            <li><b>B </b><code>number|String|Buffer|Uint8Array (default is 64)</code> The length of the buffer OR a chosen buffer. This will not affect tries because specific ranges across the buffer are chosen, but it prevents an attacker from prehashing all combinations of the buffer</li>
             <li><b>a1 </b><code>number (default is 0)</code> The lowest value a byte can be. For example if a1 is 65, there will be no byte less than 'A' in the buffer</li>
             <li><b>a2 </b><code>number (default is 256)</code> The highest value a byte can be plus one. For example if a2 is 91, there will be no byte greater than 'Z' in the buffer</li>
           </ul>
@@ -50,11 +52,11 @@ There are 3 functions that are exported for use
       <ul>
         <li><b>Description: </b>This function solves a cryptographic quiz based on the string input given</li>
         <li><b>Returns: </b>
-<pre>string that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)</pre>
+<pre>String|Buffer|Uint8Array that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
-            <li><b>input </b><code>string</code> A string which is a cryptographic quiz</li>
+            <li><b>input </b><code>String|Buffer|Uint8Array</code> A string which is a cryptographic quiz</li>
           </ul>
         </li>
       </ul>
@@ -66,11 +68,11 @@ There are 3 functions that are exported for use
       <ul>
         <li><b>Description: </b>To avoid hanging the process that called it, this runs the takeTest function in a worker thread</li>
         <li><b>Returns: </b>
-<pre>string that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)</pre>
+<pre>String|Buffer|Uint8Array that looks like garbage but is the SOLUTION of the given cryptographic quiz(the correct buffer)</pre>
         </li>
         <li><b>Arguments: </b>
           <ul>
-            <li><b>input </b><code>string</code> A string which is a cryptographic quiz</li>
+            <li><b>input </b><code>String|Buffer|Uint8Array</code> A string which is a cryptographic quiz</li>
           </ul>
         </li>
       </ul>
