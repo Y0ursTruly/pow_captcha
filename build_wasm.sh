@@ -19,8 +19,9 @@ if [ ! -d BearSSL ]; then
 fi
 
 #if [ ! -d openssl ]; then
-#  git clone https://www.bearssl.org/git/BearSSL
-#  cd BearSSL
+#  https://github.com/openssl/openssl
+#  cd openssl
+#  mkdir build
 #  emconfigure ./Configure no-asm no-shared no-threads no-dso no-afalgeng linux-generic32 -DOPENSSL_NO_SECURE_MEMORY --prefix=$(pwd)/build --openssldir=$(pwd)/build/ssl
 #  echo -e "CC = emcc\nCXX = em++\nAR=emar\nRANLIB=emranlib" >> Makefile
 #  emmake make -j $(nproc)
@@ -33,3 +34,4 @@ emcc -I ../BearSSL/inc -L ../BearSSL/build -o takeTest.js takeTest.c ../BearSSL/
 #emcc -I ../openssl/include -L ../openssl -o takeTest.js takeTest.c ../openssl/libcrypto.a -sEXPORTED_FUNCTIONS=_takeTest,_freeString,_makeString,_malloc
 rm takeTest.js
 #currently bearssl compiles a 20kb wasm file but the commented complement uses openssl and compiles a 2mb wasm file
+#bearssl is faster in webassembly than openssl lol (bearssl ~900ms on test, openssl ~1300ms on test)
