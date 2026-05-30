@@ -13,8 +13,8 @@ fi
 if [ ! -d BearSSL ]; then
   git clone https://www.bearssl.org/git/BearSSL
   cd BearSSL
-  echo -e "CC = emcc\nCXX = em++\nAR=emar\nRANLIB=emranlib" >> Makefile
-  emmake make
+  echo -e "CC = emcc\nCXX = em++\nAR=emar\nRANLIB=emranlib\nCXXFLAGS=-msimd128" >> Makefile
+  emmake make -j $(nproc) #optional-build-target
   cd ..
 fi
 
